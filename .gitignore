@@ -1,0 +1,29 @@
+# Secrets. The real config.py (the API key) lives only in the Alexa-hosted
+# skill's private repo; ignore it wherever it turns up, whatever the hosted
+# folder is called.
+config.py
+.env
+.env.*
+!.env.example
+.envrc
+
+# The Alexa-hosted skill repo created by `ask new` / `ask init` is a separate,
+# private git repo (it contains the deployed config.py with the API key).
+hosted/
+.ask/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Editors, OS, local agent settings
+.DS_Store
+.idea/
+.vscode/
+.claude/settings.local.json

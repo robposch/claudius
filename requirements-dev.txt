@@ -1,0 +1,4 @@
+-r lambda/requirements.txt
+boto3          # provided by the Lambda runtime, needed locally
+pytest>=7.4
+ruff

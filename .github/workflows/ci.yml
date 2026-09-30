@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.8 is the Alexa-hosted Lambda runtime; 3.12 is a current local Python.
+        python-version: ["3.8", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            lambda/requirements.txt
+      - run: pip install -r requirements-dev.txt
+      - run: pytest -q
+
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install ruff
+      - run: ruff check .
+      - run: shellcheck scripts/deploy.sh
+      - name: Skill package is valid JSON
+        run: |
+          for f in skill-package/skill.json skill-package/interactionModels/custom/*.json; do
+            python -m json.tool "$f" > /dev/null || { echo "invalid JSON: $f"; exit 1; }
+          done

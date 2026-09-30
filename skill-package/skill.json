@@ -1,0 +1,59 @@
+{
+  "manifest": {
+    "manifestVersion": "1.0",
+    "apis": {
+      "custom": {}
+    },
+    "publishingInformation": {
+      "category": "EDUCATION_AND_REFERENCE",
+      "isAvailableWorldwide": true,
+      "testingInstructions": "Personal skill, not intended for certification or publication.",
+      "locales": {
+        "de-DE": {
+          "name": "Claudius (unofficial)",
+          "summary": "Frag Claude per Sprache.",
+          "description": "Inoffizieller persönlicher Skill: leitet Fragen an die Claude API weiter und liest die Antwort vor. Keine Verbindung zu Anthropic oder Amazon.",
+          "examplePhrases": [
+            "Alexa, öffne claudius",
+            "Alexa, frage claudius was ist ein schwarzes Loch",
+            "Alexa, frage claudius warum der Himmel blau ist"
+          ],
+          "keywords": []
+        },
+        "en-US": {
+          "name": "Claudius (unofficial)",
+          "summary": "Ask Claude by voice.",
+          "description": "Unofficial personal skill: forwards questions to the Claude API and speaks the answer. Not affiliated with Anthropic or Amazon.",
+          "examplePhrases": [
+            "Alexa, open claudius",
+            "Alexa, ask claudius what is a black hole",
+            "Alexa, ask claudius why the sky is blue"
+          ],
+          "keywords": []
+        },
+        "en-GB": {
+          "name": "Claudius (unofficial)",
+          "summary": "Ask Claude by voice.",
+          "description": "Unofficial personal skill: forwards questions to the Claude API and speaks the answer. Not affiliated with Anthropic or Amazon.",
+          "examplePhrases": [
+            "Alexa, open clauda",
+            "Alexa, ask clauda what is a black hole",
+            "Alexa, ask clauda why the sky is blue"
+          ],
+          "keywords": []
+        },
+        "fr-FR": {
+          "name": "Claudius (unofficial)",
+          "summary": "Pose tes questions à Claude.",
+          "description": "Skill personnel non officiel : transmet les questions à l'API Claude et lit la réponse. Sans lien avec Anthropic ni Amazon.",
+          "examplePhrases": [
+            "Alexa, ouvre clauda",
+            "Alexa, demande à clauda ce qu'est un trou noir",
+            "Alexa, demande à clauda pourquoi le ciel est bleu"
+          ],
+          "keywords": []
+        }
+      }
+    }
+  }
+}

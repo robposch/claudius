@@ -1,0 +1,88 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "clauda",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AskClaudeIntent",
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "demande {query}",
+            "qu'est ce que {query}",
+            "c'est quoi {query}",
+            "qui est {query}",
+            "pourquoi {query}",
+            "comment {query}",
+            "explique {query}",
+            "dis moi {query}",
+            "je veux savoir {query}",
+            "que sais tu de {query}",
+            "que {query}",
+            "qui {query}",
+            "quand {query}",
+            "où {query}",
+            "combien {query}",
+            "quel {query}",
+            "quelle {query}"
+          ]
+        }
+      ]
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "AskClaudeIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.query"
+              }
+            }
+          ]
+        }
+      ],
+      "delegationStrategy": "SKILL_RESPONSE"
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.query",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Que veux-tu savoir ?"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "clauda",
+      "intents": [
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AskClaudeIntent",
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery"
+            }
+          ],
+          "samples": [
+            "ask {query}",
+            "what is {query}",
+            "who is {query}",
+            "why {query}",
+            "how {query}",
+            "where is {query}",
+            "tell me {query}",
+            "explain {query}",
+            "i want to know {query}",
+            "question {query}",
+            "what {query}",
+            "who {query}",
+            "when {query}",
+            "where {query}",
+            "which {query}",
+            "can {query}"
+          ]
+        }
+      ]
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "AskClaudeIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "slots": [
+            {
+              "name": "query",
+              "type": "AMAZON.SearchQuery",
+              "elicitationRequired": true,
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.query"
+              }
+            }
+          ]
+        }
+      ],
+      "delegationStrategy": "SKILL_RESPONSE"
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.query",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What would you like to know?"
+          }
+        ]
+      }
+    ]
+  }
+}
