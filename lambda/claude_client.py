@@ -33,6 +33,14 @@ def _drop_unfinished_sentence(text):
     return text[:ends[-1]] if ends else text
 
 
+def _answer_blocks(content):
+    """The blocks after the last search result: any text before it is the
+    model announcing the search, not the answer."""
+    last = max((i for i, block in enumerate(content)
+                if block.type == "web_search_tool_result"), default=-1)
+    return content[last + 1:]
+
+
 def _without_fast(extras):
     """The same request extras minus fast mode (speed and its beta header)."""
     extras = dict(extras)
@@ -54,6 +62,8 @@ def ask(question, history, model_key):
     extras = settings.MODEL_REQUEST_EXTRAS.get(model_key, {})
     request = dict(model=model_id, max_tokens=settings.MAX_TOKENS,
                    system=settings.SYSTEM_PROMPT, messages=messages)
+    if settings.WEB_SEARCH_TOOL:
+        request["tools"] = [settings.WEB_SEARCH_TOOL]
     try:
         response = _get_client().messages.create(**dict(request, **extras))
     except anthropic.RateLimitError:
@@ -62,9 +72,8 @@ def ask(question, history, model_key):
             raise
         response = _get_client().messages.create(**dict(request, **_without_fast(extras)))
 
-    text = "".join(
-        block.text for block in response.content if block.type == "text"
-    ).strip()
+    text = "".join(block.text for block in _answer_blocks(response.content)
+                   if block.type == "text").strip()
     if response.stop_reason == "max_tokens":
         text = _drop_unfinished_sentence(text)
     return text

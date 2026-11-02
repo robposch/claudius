@@ -29,6 +29,10 @@ Amazon product.
   about 1.5 to 2 seconds, well inside Alexa's ~8 second response window),
   "use sonnet" / "use haiku" switches to Sonnet 5.5 or Haiku 5.5, and the
   choice persists across sessions.
+- **Web search**: for current or local questions (weather, news, opening
+  hours) Claude runs one web search inside the same API call, about 4 s in
+  all. Set `WEB_SEARCH_TOOL` in `lambda/settings.py` to change the location
+  or to `None` to turn it off. Costs 1 cent per search plus the result text.
 - **Four locales**: de-DE, en-US, en-GB, fr-FR. Claude answers in the
   language you ask in.
 - **Graceful latency handling**: on the slower models a brief "Moment" plays

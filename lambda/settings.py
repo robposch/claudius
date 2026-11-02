@@ -28,7 +28,12 @@ SYSTEM_PROMPT = (
     "parentheses, and spell out symbols, units and abbreviations the way a "
     "person would say them. "
     "Answer in the language of the question, and address the listener "
-    "informally (du in German, tu in French)."
+    "informally (du in German, tu in French). "
+    "Search the web only when the answer depends on current or local "
+    "information, such as weather, news, opening hours or prices; otherwise "
+    "answer from what you know. Never read out sources or links. "
+    "The listener lives in Berlin, Germany: assume that location for "
+    "weather and anything local unless they name another place."
 )
 
 # --- Models --------------------------------------------------------------
@@ -74,6 +79,20 @@ MODEL_REQUEST_EXTRAS = {
     # Haiku 5.5 accepts disabled thinking at effort high or below.
     "haiku": {"thinking": {"type": "disabled"},
               "extra_body": {"output_config": {"effort": "low"}}},
+}
+
+# --- Web search ----------------------------------------------------------
+# Anthropic's server-side search: the search runs inside the same API call.
+# Costs $10 per 1,000 searches plus the result text as input tokens. One
+# search per question keeps the turn inside Alexa's window. The location
+# makes "weather" and "near me" mean this place (keep the city in
+# SYSTEM_PROMPT in step, or the model asks where you are). None turns search off.
+WEB_SEARCH_TOOL = {
+    "type": "web_search_20250305",
+    "name": "web_search",
+    "max_uses": 1,
+    "user_location": {"type": "approximate", "city": "Berlin",
+                      "country": "DE", "timezone": "Europe/Berlin"},
 }
 
 # --- Answer behavior -----------------------------------------------------

@@ -140,3 +140,33 @@ def test_rate_limit_without_fast_mode_is_raised(fake):
     fake.messages.create = create
     with pytest.raises(anthropic.RateLimitError):
         cc.ask("hi", [], "haiku")
+
+
+class _TypedBlock:
+    def __init__(self, type_, text=None):
+        self.type = type_
+        self.text = text
+
+
+def test_web_search_tool_is_sent(fake):
+    cc.ask("hi", [], "opus")
+    assert fake.messages.last_kwargs["tools"] == [settings.WEB_SEARCH_TOOL]
+
+
+def test_no_tools_when_web_search_is_off(fake, monkeypatch):
+    monkeypatch.setattr(settings, "WEB_SEARCH_TOOL", None)
+    cc.ask("hi", [], "opus")
+    assert "tools" not in fake.messages.last_kwargs
+
+
+def test_text_before_a_search_result_is_not_spoken(fake):
+    reply = _Msg("")
+    reply.content = [
+        _TypedBlock("text", "Ich schaue kurz nach. "),
+        _TypedBlock("server_tool_use"),
+        _TypedBlock("web_search_tool_result"),
+        _TypedBlock("text", "Morgen wird es "),
+        _TypedBlock("text", "kühl und bewölkt."),
+    ]
+    fake.messages.reply = reply
+    assert cc.ask("Wetter?", [], "opus") == "Morgen wird es kühl und bewölkt."
