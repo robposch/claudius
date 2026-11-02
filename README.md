@@ -25,14 +25,15 @@ Amazon product.
 
 - **Multi-turn chat**: the session stays open, follow-up questions carry the
   conversation history (last 8 turns).
-- **Model switching by voice**: Haiku 4.5 by default (fastest, fits Alexa's
-  ~8 second response window), "use sonnet" / "use opus" switches, and the
+- **Model switching by voice**: Opus 5.5 in fast mode by default (answers in
+  about 1.5 to 2 seconds, well inside Alexa's ~8 second response window),
+  "use sonnet" / "use haiku" switches to Sonnet 5.5 or Haiku 5.5, and the
   choice persists across sessions.
 - **Four locales**: de-DE, en-US, en-GB, fr-FR. Claude answers in the
   language you ask in.
 - **Graceful latency handling**: on the slower models a brief "Moment" plays
-  while Claude thinks (skipped on the fast default, Haiku, which answers
-  well inside the window); a hard client timeout gives a spoken retry hint
+  while Claude thinks (skipped on Haiku, which needs no filler); a hard
+  client timeout gives a spoken retry hint
   instead of a dead session.
 - **Free hosting**: Alexa-hosted skill (managed Lambda + DynamoDB within the
   AWS free tier).
@@ -239,8 +240,9 @@ Echo device
 Two Alexa quirks this design absorbs:
 
 - **~8 second response limit.** Alexa abandons the session if the skill is
-  slow. Hence Haiku by default, `max_tokens=500`, thinking disabled / effort
-  low on the bigger models, a 6.5 s client timeout, and a progressive
+  slow. Hence Opus in fast mode (with a fallback to standard speed when fast
+  capacity runs out), effort low on every model and thinking off where the
+  model allows it, a 6.5 s client timeout, and a progressive
   "Moment" response while waiting — sent only on the slower models
   (`FAST_MODELS` in `lambda/settings.py`), since Haiku needs no filler.
 - **Free-form speech capture.** Alexa's `AMAZON.SearchQuery` slot can't stand
@@ -304,8 +306,9 @@ Issues and pull requests are welcome. Before you open a PR:
   as "Claudia" (and treat it as a device name), while French NLU accepts
   only "clauda". If you rename, test each locale in the simulator AND on a
   real device; the Alexa app's voice history shows what was actually heard.
-- Opus on hard questions can exceed the timeout (you get a spoken retry hint;
-  say "use haiku" for speed).
+- A very hard question, or Opus falling back from fast to standard speed,
+  can exceed the timeout (you get a spoken retry hint; say "use haiku" for
+  speed).
 - The API key lives in the hosted skill's private repo (`hosted/lambda/config.py`),
   because Alexa-hosted Lambdas have no environment variables. Fine for
   personal use; use your own Lambda + a secrets manager if you need better.

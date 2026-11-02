@@ -19,19 +19,25 @@ PERSONA_NAMES = {
 DEFAULT_PERSONA_NAME = "Claudius"   # greeting in a locale not listed above
 
 SYSTEM_PROMPT = (
-    "You are answering through a voice assistant (Amazon Alexa). "
-    "Reply in one to three short spoken sentences. "
-    "Plain text only: no markdown, no lists, no code, no URLs. "
-    "Answer in the language of the question."
+    "Your answer is read aloud by Amazon Alexa's text-to-speech, and the "
+    "listener cannot see anything, so write for the ear. "
+    "Give the answer itself in the first sentence, then at most two short "
+    "sentences of the most useful context. If the question needs a longer "
+    "answer, give the gist and offer to go deeper. "
+    "Write plain sentences only: no markdown, lists, code, URLs, emojis or "
+    "parentheses, and spell out symbols, units and abbreviations the way a "
+    "person would say them. "
+    "Answer in the language of the question, and address the listener "
+    "informally (du in German, tu in French)."
 )
 
 # --- Models --------------------------------------------------------------
 MODELS = {
-    "haiku": "claude-haiku-4-5",
-    "sonnet": "claude-sonnet-5",
-    "opus": "claude-opus-4-8",
+    "haiku": "claude-haiku-5-5",
+    "sonnet": "claude-sonnet-5-5",
+    "opus": "claude-opus-5-5",
 }
-DEFAULT_MODEL = "haiku"
+DEFAULT_MODEL = "opus"
 FAST_MODELS = frozenset({"haiku"})   # skip the spoken "Moment" filler
 MODEL_SPOKEN_NAMES = {"haiku": "Haiku", "sonnet": "Sonnet", "opus": "Opus"}
 # Words heard for a voice model switch (plus common Alexa mishears) -> MODELS key.
@@ -56,16 +62,24 @@ SWITCH_VERBS = (
 # output_config goes through extra_body because the hosted runtime's Python 3.8
 # caps the anthropic SDK at 0.72.0, where it is not yet a typed parameter.
 MODEL_REQUEST_EXTRAS = {
-    # Sonnet 5 thinks adaptively by default; switch that off for latency.
-    "sonnet": {"thinking": {"type": "disabled"},
+    # Opus 5.5 always thinks (disabling it is a 400); low effort keeps that short.
+    # Fast mode (research preview) roughly halves the wait: measured 1.4-1.9 s
+    # against 2.7-3.6 s, at twice the token price. claude_client retries once
+    # without it if the fast-mode capacity is exhausted.
+    "opus": {"extra_body": {"output_config": {"effort": "low"}, "speed": "fast"},
+             "extra_headers": {"anthropic-beta": "fast-mode-2026-02-01"}},
+    # Sonnet 5.5 rejects thinking "disabled"; "between_tools" is its off switch.
+    "sonnet": {"thinking": {"type": "between_tools"},
                "extra_body": {"output_config": {"effort": "low"}}},
-    # Opus 4.8 does not think unless asked to.
-    "opus": {"extra_body": {"output_config": {"effort": "low"}}},
-    # Haiku 4.5: no entry, it supports neither setting.
+    # Haiku 5.5 accepts disabled thinking at effort high or below.
+    "haiku": {"thinking": {"type": "disabled"},
+              "extra_body": {"output_config": {"effort": "low"}}},
 }
 
 # --- Answer behavior -----------------------------------------------------
-MAX_TOKENS = 500          # spoken answers stay short
+# Thinking tokens count against this too (Opus 5.5 always thinks), so it is
+# well above what a spoken answer needs; the prompt keeps answers short.
+MAX_TOKENS = 1500
 # Alexa abandons the session after ~8 s. This is the SDK's per-request network
 # timeout (no retries), not a hard wall-clock deadline for the whole turn.
 TIMEOUT_SECONDS = 6.5

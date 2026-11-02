@@ -42,23 +42,26 @@ def test_haiku_request_shape(fake):
     out = cc.ask("hi", [], "haiku")
     assert out == "hello"
     kw = fake.messages.last_kwargs
-    assert kw["model"] == "claude-haiku-4-5"
+    assert kw["model"] == "claude-haiku-5-5"
     assert kw["max_tokens"] == settings.MAX_TOKENS
     assert kw["system"] == settings.SYSTEM_PROMPT
-    assert "extra_body" not in kw  # haiku: no effort/thinking
-    assert "thinking" not in kw
+    assert kw["thinking"] == {"type": "disabled"}
+    assert kw["extra_body"] == {"output_config": {"effort": "low"}}
 
 
 def test_opus_uses_effort_via_extra_body(fake):
     cc.ask("hi", [], "opus")
     kw = fake.messages.last_kwargs
-    assert kw["extra_body"] == {"output_config": {"effort": "low"}}
+    assert kw["model"] == "claude-opus-5-5"
+    assert kw["extra_body"] == {"output_config": {"effort": "low"}, "speed": "fast"}
+    assert kw["extra_headers"] == {"anthropic-beta": "fast-mode-2026-02-01"}
+    assert "thinking" not in kw  # Opus 5.5 rejects disabled thinking
 
 
-def test_sonnet_disables_thinking(fake):
+def test_sonnet_turns_thinking_off_with_between_tools(fake):
     cc.ask("hi", [], "sonnet")
     kw = fake.messages.last_kwargs
-    assert kw["thinking"] == {"type": "disabled"}
+    assert kw["thinking"] == {"type": "between_tools"}
     assert kw["extra_body"] == {"output_config": {"effort": "low"}}
 
 
@@ -73,7 +76,7 @@ def test_request_extras_are_taken_from_settings(fake, monkeypatch):
 
 def test_unknown_model_key_falls_back_to_default_model(fake):
     cc.ask("hi", [], "turbo")
-    assert fake.messages.last_kwargs["model"] == "claude-haiku-4-5"
+    assert fake.messages.last_kwargs["model"] == "claude-opus-5-5"
 
 
 def test_history_is_prepended(fake):
@@ -102,3 +105,38 @@ def test_complete_answer_is_not_trimmed(fake):
 def test_answer_without_text_is_empty(fake):
     fake.messages.reply = _Msg("   ")
     assert cc.ask("hi", [], "haiku") == ""
+
+
+def _rate_limit_error():
+    import anthropic
+    import httpx
+    req = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    return anthropic.RateLimitError(
+        "fast capacity", response=httpx.Response(429, request=req), body=None)
+
+
+def test_opus_falls_back_to_standard_speed_on_rate_limit(fake):
+    calls = []
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            raise _rate_limit_error()
+        return _Msg("slow but fine")
+
+    fake.messages.create = create
+    assert cc.ask("hi", [], "opus") == "slow but fine"
+    assert calls[0]["extra_body"]["speed"] == "fast"
+    assert calls[1]["extra_body"] == {"output_config": {"effort": "low"}}
+    assert "extra_headers" not in calls[1]
+
+
+def test_rate_limit_without_fast_mode_is_raised(fake):
+    import anthropic
+
+    def create(**kwargs):
+        raise _rate_limit_error()
+
+    fake.messages.create = create
+    with pytest.raises(anthropic.RateLimitError):
+        cc.ask("hi", [], "haiku")

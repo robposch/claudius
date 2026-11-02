@@ -33,6 +33,14 @@ def _drop_unfinished_sentence(text):
     return text[:ends[-1]] if ends else text
 
 
+def _without_fast(extras):
+    """The same request extras minus fast mode (speed and its beta header)."""
+    extras = dict(extras)
+    extras["extra_body"] = {k: v for k, v in extras["extra_body"].items() if k != "speed"}
+    extras.pop("extra_headers", None)
+    return extras
+
+
 def ask(question, history, model_key):
     """Send question (with prior turns) to Claude, return the answer text.
 
@@ -43,13 +51,16 @@ def ask(question, history, model_key):
     model_id = settings.MODELS.get(model_key, settings.MODELS[settings.DEFAULT_MODEL])
     messages = list(history) + [{"role": "user", "content": question}]
 
-    response = _get_client().messages.create(
-        model=model_id,
-        max_tokens=settings.MAX_TOKENS,
-        system=settings.SYSTEM_PROMPT,
-        messages=messages,
-        **settings.MODEL_REQUEST_EXTRAS.get(model_key, {}),
-    )
+    extras = settings.MODEL_REQUEST_EXTRAS.get(model_key, {})
+    request = dict(model=model_id, max_tokens=settings.MAX_TOKENS,
+                   system=settings.SYSTEM_PROMPT, messages=messages)
+    try:
+        response = _get_client().messages.create(**dict(request, **extras))
+    except anthropic.RateLimitError:
+        # Fast mode has its own, smaller capacity: fall back to standard speed.
+        if "speed" not in extras.get("extra_body", {}):
+            raise
+        response = _get_client().messages.create(**dict(request, **_without_fast(extras)))
 
     text = "".join(
         block.text for block in response.content if block.type == "text"
