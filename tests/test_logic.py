@@ -6,6 +6,11 @@ import lambda_function as lf
     ("benutze opus", "opus"), ("wechsle zu sonnet", "sonnet"),
     ("nimm haiku", "haiku"), ("use opus", "opus"), ("utilise opus", "opus"),
     ("benutze opos", "opus"), ("modell opus", "opus"),
+    # Variants German speech recognition produces for "benutze ...":
+    ("Benutzer Haiku", "haiku"), ("benutzt Haiku.", "haiku"),
+    ("benutze heiko", "haiku"), ("nutze Sonnett", "sonnet"),
+    ("Haiku benutzen", "haiku"), ("wechsel auf sonnet bitte", "sonnet"),
+    ("nimm jetzt bitte opus", "opus"), ("Benutze Haiku!", "haiku"),
 ])
 def test_model_switch_detected(q, expected):
     assert lf.detect_model_switch(q) == expected
@@ -14,6 +19,8 @@ def test_model_switch_detected(q, expected):
 @pytest.mark.parametrize("q", [
     "was ist opus", "warum benutzt man opus statt sonnet in der forschung",
     "use opus for a research paper", "opus", "wie schwer ist ein elefant",
+    "was bedeutet das wort haiku", "schreib mir ein haiku über den herbst",
+    "benutze opus oder sonnet",
 ])
 def test_model_switch_not_a_switch(q):
     assert lf.detect_model_switch(q) is None

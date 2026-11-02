@@ -12,7 +12,7 @@ nothing but `ANTHROPIC_API_KEY`. Replace the key with
 | Change | Where |
 |---|---|
 | Models / default model | `lambda/settings.py` (`MODELS`, `DEFAULT_MODEL`, `FAST_MODELS`, `MODEL_SPOKEN_NAMES`). When you change a model ID, also revisit its entry in `MODEL_REQUEST_EXTRAS` (thinking / effort arguments): these are model-specific, and a model that does not accept them answers every question with an API error. |
-| Voice model switching | `lambda/settings.py`: `MODEL_WORDS` (spoken model names plus common mishears) and `SWITCH_VERBS` ("use", "benutze", ...). Parsed in code (`detect_model_switch` in `lambda/lambda_function.py`), not by an interaction-model intent. |
+| Voice model switching | `lambda/settings.py`: `MODEL_WORDS` (spoken model names plus common mishears) and `SWITCH_VERBS` (verb stems such as "use", "benutz", matched in any word order in a short utterance). Parsed in code (`detect_model_switch` in `lambda/lambda_function.py`), not by an interaction-model intent. |
 | Closing phrases ("danke", "das war's", ...) | `STOP_PHRASES` in `lambda/settings.py`. Because the query slot is elicited, "stopp" lands in the slot instead of firing AMAZON.StopIntent, so closings are matched in code (whole utterance only) and end the session. "Alexa, stopp" with the wake word still fires StopIntent normally. |
 | Answer style / system prompt | `lambda/settings.py` (`SYSTEM_PROMPT`) |
 | Spoken UI strings | `lambda/settings.py` (`STRINGS`) |

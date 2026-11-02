@@ -19,19 +19,20 @@ PERSONA_NAMES = {
 DEFAULT_PERSONA_NAME = "Claudius"   # greeting in a locale not listed above
 
 SYSTEM_PROMPT = (
-    "Your answer is read aloud by Amazon Alexa's text-to-speech, and the "
-    "listener cannot see anything, so write for the ear. "
-    "Give the answer itself in the first sentence, then at most two short "
-    "sentences of the most useful context. If the question needs a longer "
-    "answer, give the gist and offer to go deeper. "
-    "Write plain sentences only: no markdown, lists, code, URLs, emojis or "
-    "parentheses, and spell out symbols, units and abbreviations the way a "
-    "person would say them. "
-    "Answer in the language of the question, and address the listener "
-    "informally (du in German, tu in French). "
-    "Search the web only when the answer depends on current or local "
-    "information, such as weather, news, opening hours or prices; otherwise "
-    "answer from what you know. Never read out sources or links. "
+    "This is a voice conversation: Amazon Alexa reads your reply aloud. "
+    "Answer the way a person would in passing, in one or two short "
+    "sentences, at most about forty words. Say only what was asked: no "
+    "background, caveats or alternatives unless they matter. "
+    "Do not ask follow-up questions and do not offer more help or detail; "
+    "the listener asks again if they want more. Ask back only when the "
+    "question cannot be answered without it. "
+    "Write plain spoken sentences: no markdown, lists, URLs, emojis or "
+    "parentheses, and say numbers, units and abbreviations the way a person "
+    "would. "
+    "Answer in the language of the question, informally (du in German, tu "
+    "in French). "
+    "Search the web only for current or local facts such as weather, news, "
+    "opening hours or prices, and never mention sources. "
     "The listener lives in Berlin, Germany: assume that location for "
     "weather and anything local unless they name another place."
 )
@@ -47,18 +48,21 @@ FAST_MODELS = frozenset({"haiku"})   # skip the spoken "Moment" filler
 MODEL_SPOKEN_NAMES = {"haiku": "Haiku", "sonnet": "Sonnet", "opus": "Opus"}
 # Words heard for a voice model switch (plus common Alexa mishears) -> MODELS key.
 MODEL_WORDS = {
-    "haiku": "haiku", "heiku": "haiku",
-    "sonnet": "sonnet", "sonett": "sonnet",
+    "haiku": "haiku", "heiku": "haiku", "heiko": "haiku", "haiko": "haiku",
+    "sonnet": "sonnet", "sonett": "sonnet", "sonnett": "sonnet", "sonnette": "sonnet",
     "opus": "opus", "opos": "opus",
 }
-# A model switch is "<verb> [up to two filler words] <model word>" as the whole
-# utterance, e.g. "benutze opus", "wechsle zu sonnet", "use haiku".
+# A model switch is a short utterance (SWITCH_MAX_WORDS at most) with exactly
+# one model word and a word starting with one of these stems, in any order:
+# "benutze opus", "Benutzer Haiku" (a common mishearing), "Haiku benutzen",
+# "wechsel auf sonnet bitte". Stems, so every verb form matches.
 SWITCH_VERBS = (
-    "benutze", "benutz", "verwende", "nutze", "nimm", "wechsle", "wechsele",
+    "benutz", "verwend", "nutz", "nimm", "nehm", "wechsl", "wechsel",
     "modell", "sprachmodell",                   # de
     "use", "switch", "change",                  # en
-    "utilise", "prends", "passe",               # fr
+    "utilis", "prend", "pass",                  # fr
 )
+SWITCH_MAX_WORDS = 5
 # Extra Messages API arguments per model, tuned for Alexa's ~8 s window. These
 # are model-specific: when you point a key at a different model ID, check the
 # API reference for what that model accepts (some reject a disabled-thinking

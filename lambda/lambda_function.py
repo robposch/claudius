@@ -52,13 +52,6 @@ HISTORY_MAX_ENTRIES = settings.HISTORY_TURNS * 2
 # (e.g. "benutze opus", "wechsle zu sonnet", "use haiku", "utilise opus").
 # Anchoring both ends keeps ordinary questions that merely mention a model
 # ("was ist opus", "why use opus for research") from being read as a switch.
-_SWITCH_RE = re.compile(
-    r"^(?:" + "|".join(map(re.escape, settings.SWITCH_VERBS)) + r")"
-    r"(?:\s+\S+){0,2}?\s+"
-    r"(" + "|".join(map(re.escape, settings.MODEL_WORDS)) + r")[\s?.!]*$",
-    re.IGNORECASE,
-)
-
 # A markdown heading marker: leading "#"s followed by a space. A "#" inside
 # text ("C#") is left alone.
 _HEADING_RE = re.compile(r"^[ \t]{0,3}#{1,6}[ \t]+", re.MULTILINE)
@@ -87,13 +80,17 @@ def to_speech(text):
 def detect_model_switch(query):
     """Return a canonical model key if the whole utterance is a model-switch
     command, else None. Runs on the elicited query -- there is no separate
-    model-switch intent to misfire."""
-    if not query:
+    model-switch intent to misfire. Tolerant of word order and verb forms,
+    because speech recognition varies ("Benutzer Haiku", "Haiku benutzen")."""
+    words = _normalize(query).split()
+    if not words or len(words) > settings.SWITCH_MAX_WORDS:
         return None
-    match = _SWITCH_RE.match(query.strip())
-    if not match:
+    models = [settings.MODEL_WORDS[w] for w in words if w in settings.MODEL_WORDS]
+    if len(models) != 1:
         return None
-    return settings.MODEL_WORDS.get(match.group(1).lower())
+    if not any(w.startswith(settings.SWITCH_VERBS) for w in words):
+        return None
+    return models[0]
 
 
 def _normalize(query):

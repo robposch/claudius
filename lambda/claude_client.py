@@ -1,6 +1,8 @@
 """Thin wrapper around the Anthropic Messages API for voice-length answers."""
 
+import logging
 import re
+import time
 
 import anthropic
 
@@ -8,6 +10,8 @@ import config
 import settings
 
 _client = None
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # The end of a sentence: closing punctuation followed by whitespace.
 _SENTENCE_END_RE = re.compile(r"[.!?](?=\s)")
@@ -64,6 +68,7 @@ def ask(question, history, model_key):
                    system=settings.SYSTEM_PROMPT, messages=messages)
     if settings.WEB_SEARCH_TOOL:
         request["tools"] = [settings.WEB_SEARCH_TOOL]
+    started = time.monotonic()
     try:
         response = _get_client().messages.create(**dict(request, **extras))
     except anthropic.RateLimitError:
@@ -72,6 +77,12 @@ def ask(question, history, model_key):
             raise
         response = _get_client().messages.create(**dict(request, **_without_fast(extras)))
 
+    usage = getattr(response, "usage", None)
+    tool_use = getattr(usage, "server_tool_use", None)
+    logger.info("Claude answered in %.1f s (model=%s, speed=%s, searches=%s, in=%s, out=%s)",
+                time.monotonic() - started, model_key, getattr(usage, "speed", None),
+                getattr(tool_use, "web_search_requests", 0) if tool_use else 0,
+                getattr(usage, "input_tokens", None), getattr(usage, "output_tokens", None))
     text = "".join(block.text for block in _answer_blocks(response.content)
                    if block.type == "text").strip()
     if response.stop_reason == "max_tokens":
