@@ -33,6 +33,13 @@ This file only covers what is different for you as an agent.
 5. **Do not deploy `skill-package/` through the hosted git repo**, and do not
    add a model-switch intent to the interaction models. README "How it works"
    explains both.
+6. **This repo is public on GitHub.** Before every commit and push, check the
+   diff for secrets and personal data: API keys, the skill ID
+   (`amzn1.ask.skill...`), console workspace IDs, 1Password references,
+   e-mail addresses, phone numbers, street addresses, names of people. Run
+   `gitleaks git --redact .` and `gitleaks dir --redact .` and stop if
+   either reports a finding. CI runs the same scan, but by then the push is
+   already public. Commit messages are public too.
 
 ## Deploying for a user
 

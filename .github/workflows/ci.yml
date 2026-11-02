@@ -43,3 +43,13 @@ jobs:
           for f in skill-package/skill.json skill-package/interactionModels/custom/*.json; do
             python -m json.tool "$f" > /dev/null || { echo "invalid JSON: $f"; exit 1; }
           done
+
+  secrets:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
